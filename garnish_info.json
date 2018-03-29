@@ -1,0 +1,114 @@
+{
+  "description": "Garnish is an information burger API, written in Python and running Flask on the backend. It can serve content for Burger Love stuff.",
+  "endpoints": {
+    "/burgers": {
+      "description": "Info about all burgers.",
+      "structure": "A list of BurgerInfo objects."
+    },
+    "/burger/@id": {
+      "description": "Info about a single burger.",
+      "structure": "A single BurgerInfo object.",
+      "variables": {
+        "@id": "The ID of the burger."
+      }
+    },
+    "/restaurants": {
+      "description": "Info about all participating restaurant.",
+      "structure": "A list of RestaurantInfo objects."
+    },
+    "/restaurant/@id": {
+      "description": "Info about a single restaurant.",
+      "structure": "A single RestaurantInfo object.",
+      "variables": {
+        "@id": "The ID of the restaurant."
+      }
+    },
+    "/restaurant/@id/partners": {
+      "description": "The restaurants using the same burger as the given one.",
+      "structure": "A list of RestaurantPartner objects.",
+      "variables": {
+        "@id": "The ID of the restaurant."
+      }
+    },
+    "/coordinates": {
+      "description": "Lists coordinates of all restaurants.",
+      "structure": "A list of RestaurantCoordinates objects."
+    },
+    "/coordinates/open?offset=\"\"": {
+      "description": "Lists coordinates of all restaurants currently open.",
+      "structure": "A list of RestaurantCoordinates objects.",
+      "variables": {
+        "?offset": "An integer designating the number of hours to offset the hours of operation by (e.g. ?offset=1 to search for restaurants that will be open for at least the next hour). Leave unset to use no offset."
+      }
+    },
+    "/search?term=\"\"": {
+      "description": "Runs a search using the given term.",
+      "structure": "A list of SearchResult objects.",
+      "variables": {
+        "?term": "The search term to use."
+      }
+    }
+  },
+  "structures": {
+    "BurgerInfo": {
+      "description": "Information about an individual burger.",
+      "keys": {
+        "id": "A unique integer identifier for this burger.",
+        "ingredients": "A string containing the ingredients list for this burger.",
+        "name": "The string name of the burger.",
+        "quote": "The string quote describing the burger.",
+        "restaurants": "A list containing restaurant ID integers representing restaurants this burger can be found at.",
+        "url_suffix": "A string describing the URL suffix for the burger's view and vote pages."
+      }
+    },
+    "HoursInfo": {
+      "description": "Information about the hours of operation of a restaurant.",
+      "keys": {
+        "[n]": "The ISO weekday this list of hours of operation are for. This contains a list of objects, each containing \"start_time\" and \"end_time\", containing an \"h\" and \"m\" for the hour (24h format) and minute corresponding to each time."
+      }
+    },
+    "RestaurantInfo": {
+      "description": "Information about an individual restaurant.",
+      "keys": {
+        "address": "A list of strings representing individual lines of this restaurant's address.",
+        "burgers": "A list containing burger ID integers representing burgers this restaurant serves.",
+        "hours_of_operation": "A list containing string entries of dates and times this restaurant is open.",
+        "hours_table": "An HoursTable structure.",
+        "id": "A unique integer identifier for this restaurant.",
+        "latitude": "A signed float representing the latitude coordinate of this restaurant.",
+        "longitude": "A signed float representing the longitude coordinate of this restaurant.",
+        "name": "The name of the restaurant.",
+        "phone_number": "The restaurant's phone number.",
+        "site_id": "A string representing the suffix of URLs this restaurant can be found on using the official Burger Love website.",
+        "website": "The restaurant's business website."
+      }
+    },
+    "RestaurantPartner": {
+      "description": "Information about restaurants carrying the same burger as a given restaurant.",
+      "under_key": "partners",
+      "keys": {
+        "restaurant_id": "The ID of an affiliated restaurant."
+      }
+    },
+    "RestaurantCoordinates": {
+      "description": "Coordinates for a restaurant.",
+      "under_key": "coordinates",
+      "keys": {
+        "id": "The unique integer ID of the restaurant.",
+        "latitude": "A signed float representing the latitude coordinate of this restaurant.",
+        "longitude": "A signed float representing the longitude coordinate of this restaurant.",
+        "name": "The name of the restaurant."
+      }
+    },
+    "SearchResult": {
+      "description": "A result from a search representing the restaurant the searched term can be found at.",
+      "under_key": "An integer representing the result number.",
+      "keys": {
+        "id": "The unique ID integer of the restaurant.",
+        "latitude": "A signed float representing the latitude coordinate of this restaurant.",
+        "longitude": "A signed float representing the longitude coordinate of this restaurant.",
+        "name": "The name of the restaurant."
+      }
+    }
+  }
+}

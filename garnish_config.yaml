@@ -1,0 +1,2 @@
+database: garnish.db
+debug: True
