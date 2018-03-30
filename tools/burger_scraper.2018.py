@@ -1,7 +1,7 @@
 from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 import json
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 import os
 import sys
 import sqlite3
@@ -39,15 +39,8 @@ def save_burger_image(url, suffix):
 
 
 def get_address_bits(address):
-  address_bits = []
-  address = address.split('\n')
-  address.pop(0)
-  for line in address:
-    if line[:4] == '    ':
-      address_bits.append(line.strip())
-    else:
-      break
-  return address_bits
+  address_bits = address.strip().split('\n')
+  return [bit.strip() for bit in address_bits]
 
 
 def spoofed_read(url):
@@ -85,16 +78,16 @@ def scrape():
       image = burgerpage.find('img', class_="burger-image")
       save_burger_image(base_url + image['src'], url_suffix)
 
-      title_bit = burgerpage.find('div', id="Burger-Title").text.split('\n')
-
       burgerinfo = {
-          'name': title_bit[0].strip(),
+          'name': "".join([t for t in burgerpage.find('div', id="Burger-Title") if type(t)==element.NavigableString]).strip(),
           'quote': burgerpage.find('blockquote', id="Burger-Quote").text[2:-2].strip(),
           'ingredients': burgerpage.find('div', id="Ingredients").string.strip(),
           'url_suffix': url_suffix,
       }
 
-      cur.execute('insert into burgers (name, quote, ingredients, url_suffix) values (?,?,?,?)', [burgerinfo['name'], burgerinfo['quote'], burgerinfo['ingredients'], burgerinfo['url_suffix']])
+      print("Adding %s" % burgerinfo['name'])
+
+      cur.execute('insert into burgers (id, name, quote, ingredients, url_suffix) values (?,?,?,?,?)', [None, burgerinfo['name'], burgerinfo['quote'], burgerinfo['ingredients'], burgerinfo['url_suffix']])
       burger_id = cur.lastrowid
 
       restaurant_divs = []
@@ -109,21 +102,21 @@ def scrape():
         coords = extract_coords_from_url(map_url['href'])
 
         restaurantinfo = {
-          'name': title_bit[1].strip(),
+          'name': burgerpage.find('div', id="Restaurant-Name").text.strip(),
           'phone_number': restaurant_div.find('div', class_='profile-contact').text[5:18],
           'site_id': url_suffix,
           'website': restaurant_div.find('a', class_='website-link')['href'],
           'latitude': coords['latitude'],
           'longitude': coords['longitude'],
-          'address': json.dumps(get_address_bits(burgerpage.find(class_="location-address").strong.next_sibling.text)),
+          'address': json.dumps(get_address_bits("".join([t for t in restaurant_div if type(t)==element.NavigableString]))),
           'hours_of_operation': json.dumps([line.strip() for line in burgerpage.find(class_="profile-hours").text.splitlines()]),
         }
 
-        cur.execute('insert into restaurants (name, phone_number, address, hours_of_operation, latitude, longitude, website) values (?,?,?,?,?,?,?)', [restaurantinfo['name'], restaurantinfo['phone_number'], restaurantinfo['address'], restaurantinfo['hours_of_operation'], restaurantinfo['latitude'], restaurantinfo['longitude'], restaurantinfo['website']])
+        cur.execute('insert into restaurants (id, name, phone_number, address, hours_of_operation, latitude, longitude, website) values (?,?,?,?,?,?,?,?)', [None, restaurantinfo['name'], restaurantinfo['phone_number'], restaurantinfo['address'], restaurantinfo['hours_of_operation'], restaurantinfo['latitude'], restaurantinfo['longitude'], restaurantinfo['website']])
         restaurant_ids.append(cur.lastrowid)
 
       for restaurant_id in restaurant_ids:
-        cur.execute('insert into restaurant_burgers (burger_id, restaurant_id) values (?,?)', [burger_id, restaurant_id])
+        cur.execute('insert into restaurant_burgers (id, burger_id, restaurant_id) values (?,?,?)', [None, burger_id, restaurant_id])
 
     conn.commit()
     conn.close()
