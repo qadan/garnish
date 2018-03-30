@@ -21,7 +21,7 @@ Before running the server for the first time, `garnish.db` has to be generated a
 The `garnish.db` file can be generated using `schema.sql`; the easiest way of doing this is probably just:
 
 ```bash
-schema.sql > sqlite3 garnish.db
+sqlite3 garnish.db < schema.sql
 ```
 
 This will create an empty `garnish.db` ready to be populated with burgers and restaurants.
